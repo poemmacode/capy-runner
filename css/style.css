@@ -4,6 +4,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 body {
@@ -13,29 +15,37 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   color: #fff;
+  touch-action: manipulation;
 }
 
 #game-wrapper {
   position: relative;
   width: 900px;
   max-width: 100vw;
+  max-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 #game-container {
   position: relative;
   background: #0f0f23;
-  border: 4px solid #333;
-  border-radius: 8px;
+  border: 4px solid #444;
+  border-radius: 8px 8px 0 0;
   overflow: hidden;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), 0 0 60px rgba(100, 60, 30, 0.2);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
 }
 
 canvas {
   display: block;
   width: 100%;
+  height: auto;
   image-rendering: pixelated;
+  touch-action: manipulation;
 }
 
 #hud {
@@ -43,7 +53,7 @@ canvas {
   top: 0;
   left: 0;
   right: 0;
-  padding: 12px 16px;
+  padding: 10px 14px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -53,43 +63,84 @@ canvas {
 
 #lives {
   display: flex;
-  gap: 4px;
-  flex-direction: row;
+  gap: 3px;
+}
+
+#lives canvas {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
 }
 
 #score-display {
-  font-size: 14px;
+  font-size: 13px;
   text-shadow: 2px 2px 0 #000;
   color: #fff;
 }
 
 #rewards-bar {
   position: absolute;
-  top: 36px;
-  left: 16px;
+  top: 34px;
+  left: 14px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   pointer-events: none;
   z-index: 10;
-  font-size: 10px;
+  font-size: 9px;
   text-shadow: 1px 1px 0 #000;
 }
 
 .reward-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .reward-item canvas {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   image-rendering: pixelated;
 }
 
 .reward-count {
   color: #FFD700;
+}
+
+#mobile-controls {
+  background: #0f0f23;
+  border: 4px solid #444;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 12px 20px 20px;
+  display: flex;
+  justify-content: center;
+  z-index: 5;
+}
+
+#mobile-controls.hidden {
+  display: none !important;
+}
+
+#jump-btn {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 18px;
+  background: #8B5E3C;
+  color: #fff;
+  border: 4px solid #6B4226;
+  border-radius: 12px;
+  padding: 16px 48px;
+  cursor: pointer;
+  touch-action: manipulation;
+  text-shadow: 2px 2px 0 #3D2314;
+  box-shadow: 0 4px 0 #3D2314;
+  transition: transform 0.05s, box-shadow 0.05s;
+  min-width: 200px;
+}
+
+#jump-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #3D2314;
 }
 
 .screen-overlay {
@@ -109,13 +160,13 @@ canvas {
 }
 
 .screen-overlay.hidden {
-  display: none;
+  display: none !important;
 }
 
 #start-screen h1 {
   font-size: 24px;
   color: #8B5E3C;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   text-shadow: 3px 3px 0 #3D2314;
   line-height: 1.4;
 }
@@ -123,13 +174,13 @@ canvas {
 #start-screen .subtitle {
   font-size: 10px;
   color: #aaa;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 #start-screen .instructions {
   font-size: 9px;
   color: #888;
-  line-height: 2;
+  line-height: 2.2;
 }
 
 .blink {
@@ -144,69 +195,82 @@ canvas {
 #gameover-screen h2 {
   font-size: 20px;
   color: #FF4444;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   text-shadow: 2px 2px 0 #800;
 }
 
 #gameover-screen .final-score {
   font-size: 14px;
   color: #FFD700;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 #gameover-screen .final-rewards {
   font-size: 9px;
   color: #aaa;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   line-height: 2;
 }
 
 #victory-screen h2 {
   font-size: 22px;
   color: #FFD700;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   text-shadow: 2px 2px 0 #AA8800;
 }
 
 #victory-screen .victory-svg {
-  margin: 16px 0;
+  margin: 12px 0;
 }
 
-#victory-screen .victory-svg svg {
-  width: 192px;
-  height: 126px;
+#victory-screen .victory-svg img {
+  max-width: 180px;
+  height: auto;
+  image-rendering: pixelated;
+  border-radius: 12px;
 }
 
 #victory-screen .victory-text {
   font-size: 10px;
   color: #aaa;
-  margin-bottom: 24px;
-  line-height: 2;
+  margin-bottom: 20px;
 }
 
-#gameover-screen .restart-hint,
-#victory-screen .restart-hint {
+.restart-hint {
   font-size: 10px;
   color: #888;
-}
-
-#start-screen .capybara-preview {
-  margin: 20px 0;
-}
-
-#start-screen .capybara-preview svg {
-  width: 128px;
-  height: 112px;
 }
 
 @media (max-width: 600px) {
   #game-wrapper {
     width: 100vw;
+    height: 100dvh;
+    justify-content: center;
   }
   #start-screen h1 {
     font-size: 16px;
   }
+  #gameover-screen h2 {
+    font-size: 16px;
+  }
+  #victory-screen h2 {
+    font-size: 18px;
+  }
   #score-display {
-    font-size: 11px;
+    font-size: 10px;
+  }
+  #jump-btn {
+    font-size: 16px;
+    padding: 14px 36px;
+    min-width: 160px;
+  }
+  #mobile-controls {
+    padding: 10px 16px 16px;
+  }
+}
+
+@media (min-width: 601px) {
+  #mobile-controls {
+    display: none !important;
   }
 }

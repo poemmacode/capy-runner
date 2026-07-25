@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
   <title>Capybara Runner</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
@@ -24,6 +24,10 @@
       </div>
       <div id="rewards-bar"></div>
 
+      <div id="mobile-controls" class="hidden">
+        <button id="jump-btn">JUMP</button>
+      </div>
+
       <div id="start-screen" class="screen-overlay">
         <h1>CAPYBARA<br>RUNNER</h1>
         <div class="subtitle">A Pixel Adventure</div>
@@ -44,7 +48,7 @@
         <h2>GAME OVER</h2>
         <div class="final-score">SCORE: 0</div>
         <div class="final-rewards">NO REWARDS</div>
-        <div class="restart-hint blink">PRESS SPACE TO RETRY</div>
+        <div class="restart-hint blink">PRESS SPACE / TAP TO RETRY</div>
       </div>
 
       <div id="victory-screen" class="screen-overlay hidden">
@@ -52,10 +56,9 @@
         <div class="final-score">FINAL SCORE: 0</div>
         <div class="victory-svg"></div>
         <div class="victory-text">
-          You conquered all obstacles!<br>
           The Capybara Legend!
         </div>
-        <div class="restart-hint blink">PRESS SPACE TO PLAY AGAIN</div>
+        <div class="restart-hint blink">PRESS SPACE / TAP TO PLAY AGAIN</div>
       </div>
     </div>
   </div>

@@ -1,73 +1,4 @@
 const Sprites = (() => {
-  let capyCanvas = null;
-  let crocCanvas = null;
-  let loaded = false;
-  let loadCallbacks = [];
-
-  function onReady(cb) {
-    if (loaded) cb();
-    else loadCallbacks.push(cb);
-  }
-
-  function loadSVGText(path) {
-    return new Promise((resolve, reject) => {
-      const req = new XMLHttpRequest();
-      req.open('GET', path, true);
-      req.onload = () => resolve(req.responseText);
-      req.onerror = reject;
-      req.send();
-    });
-  }
-
-  function svgToDataUrl(svg) {
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
-  }
-
-  function svgToCanvas(svgText, w, h) {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const c = document.createElement('canvas');
-        c.width = w;
-        c.height = h;
-        const ctx = c.getContext('2d');
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(img, 0, 0);
-        resolve(c);
-      };
-      img.src = svgToDataUrl(svgText);
-    });
-  }
-
-  async function init() {
-    try {
-      const capySVG = await loadSVGText('js/capy-clean.svg');
-      const crocSVG = await loadSVGText('js/coco-clean.svg');
-      capyCanvas = await svgToCanvas(capySVG, 500, 280);
-      crocCanvas = await svgToCanvas(crocSVG, 500, 330);
-      loaded = true;
-      loadCallbacks.forEach(cb => cb());
-      loadCallbacks = [];
-    } catch (e) {
-      console.error('Sprites.init error:', e);
-    }
-  }
-
-  function drawCapybara(ctx, x, y, scale, frame, jumping) {
-    if (!capyCanvas) return;
-    const bob = jumping ? 0 : Math.sin(frame * 0.3) * 2;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(capyCanvas, 0, 0, 500, 280, x, y + bob, 500 * scale, 280 * scale);
-  }
-
-  function drawCrocodile(ctx, x, y, scale, frame) {
-    if (!crocCanvas) return;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(crocCanvas, 0, 0, 500, 330, x, y, 500 * scale, 330 * scale);
-  }
-
-  // --- Small pixel sprites (hearts, ruby, medal, cup) ---
-
   const PIXEL = 4;
 
   function drawPixelGrid(ctx, data, x, y, scale) {
@@ -83,6 +14,236 @@ const Sprites = (() => {
     }
   }
 
+  function drawRoundedRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function strokeStyle(ctx, color) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+  }
+
+  function drawCapybara(ctx, x, y, scale, frame, jumping) {
+    const s = scale || 1;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+
+    const bob = jumping ? 0 : Math.sin(frame * 0.3) * 0.6;
+    ctx.translate(0, bob);
+
+    // Body
+    ctx.fillStyle = '#8B5E3C';
+    drawRoundedRect(ctx, 10, 8, 56, 32, 8);
+    ctx.fill();
+    strokeStyle(ctx, '#6B4226');
+    drawRoundedRect(ctx, 10, 8, 56, 32, 8);
+    ctx.stroke();
+
+    // Belly
+    ctx.fillStyle = '#C4956A';
+    drawRoundedRect(ctx, 16, 20, 44, 18, 6);
+    ctx.fill();
+
+    // Head
+    ctx.fillStyle = '#8B5E3C';
+    drawRoundedRect(ctx, 52, 4, 22, 14, 6);
+    ctx.fill();
+    strokeStyle(ctx, '#6B4226');
+    drawRoundedRect(ctx, 52, 4, 22, 14, 6);
+    ctx.stroke();
+
+    // Snout
+    ctx.fillStyle = '#A0785C';
+    drawRoundedRect(ctx, 64, 6, 16, 10, 4);
+    ctx.fill();
+
+    // Nose
+    ctx.fillStyle = '#2A1508';
+    drawRoundedRect(ctx, 72, 6, 6, 4, 2);
+    ctx.fill();
+
+    // Eye
+    ctx.fillStyle = '#1A0E08';
+    ctx.beginPath();
+    ctx.arc(64, 8, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(65, 7, 1, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ears
+    ctx.fillStyle = '#8B5E3C';
+    ctx.beginPath();
+    ctx.arc(56, 3, 4, Math.PI, 0);
+    ctx.fill();
+    ctx.fillStyle = '#D4956A';
+    ctx.beginPath();
+    ctx.arc(56, 3, 2, Math.PI, 0);
+    ctx.fill();
+    ctx.fillStyle = '#8B5E3C';
+    ctx.beginPath();
+    ctx.arc(68, 3, 4, Math.PI, 0);
+    ctx.fill();
+    ctx.fillStyle = '#D4956A';
+    ctx.beginPath();
+    ctx.arc(68, 3, 2, Math.PI, 0);
+    ctx.fill();
+
+    // Legs
+    const legPhase = jumping ? 0 : Math.sin(frame * 0.4);
+    const legOffset = legPhase * 2;
+
+    ctx.fillStyle = '#6B4226';
+    const legPositions = [
+      [14 + legOffset, 38],
+      [22 - legOffset, 38],
+      [42 + legOffset, 38],
+      [50 - legOffset, 38],
+    ];
+    for (const [lx, ly] of legPositions) {
+      drawRoundedRect(ctx, lx, ly, 8, 8, 3);
+      ctx.fill();
+    }
+
+    // Feet
+    ctx.fillStyle = '#5A3620';
+    for (const [lx, ly] of legPositions) {
+      drawRoundedRect(ctx, lx - 2, ly + 6, 12, 4, 2);
+      ctx.fill();
+    }
+
+    // Tail
+    ctx.fillStyle = '#6B4226';
+    ctx.beginPath();
+    ctx.moveTo(10, 14);
+    ctx.quadraticCurveTo(2, 8, 6, 20);
+    ctx.quadraticCurveTo(4, 12, 10, 14);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawCrocodile(ctx, x, y, scale, frame) {
+    const s = scale || 1;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(s, s);
+
+    const mouthPhase = Math.sin(frame * 0.2) * 2;
+
+    // Body
+    ctx.fillStyle = '#2D7D2D';
+    drawRoundedRect(ctx, 20, 10, 60, 18, 6);
+    ctx.fill();
+    strokeStyle(ctx, '#1B5C1B');
+    drawRoundedRect(ctx, 20, 10, 60, 18, 6);
+    ctx.stroke();
+
+    // Belly
+    ctx.fillStyle = '#9DD39D';
+    drawRoundedRect(ctx, 24, 18, 52, 10, 4);
+    ctx.fill();
+
+    // Head / snout
+    ctx.fillStyle = '#3A9A3A';
+    drawRoundedRect(ctx, 66, 4, 40, 16, 6);
+    ctx.fill();
+    strokeStyle(ctx, '#1B5C1B');
+    drawRoundedRect(ctx, 66, 4, 40, 16, 6);
+    ctx.stroke();
+
+    // Upper jaw
+    ctx.fillStyle = '#3A9A3A';
+    drawRoundedRect(ctx, 72, 4, 36, 8, 3);
+    ctx.fill();
+
+    // Lower jaw (animated)
+    ctx.fillStyle = '#4AB84A';
+    const jawY = 12 + mouthPhase;
+    drawRoundedRect(ctx, 74, jawY, 30, 6, 2);
+    ctx.fill();
+
+    // Mouth interior
+    ctx.fillStyle = '#CC3333';
+    drawRoundedRect(ctx, 80, 12 + (mouthPhase > 0 ? mouthPhase * 0.5 : 0), 20, 3, 1);
+    ctx.fill();
+
+    // Teeth
+    ctx.fillStyle = '#FFFFFF';
+    for (let tx = 84; tx < 104; tx += 6) {
+      ctx.fillRect(tx, 11, 3, 3);
+    }
+    for (let tx = 84; tx < 104; tx += 6) {
+      ctx.fillRect(tx, 15 + mouthPhase, 3, 3);
+    }
+
+    // Eye
+    ctx.fillStyle = '#1B5C1B';
+    ctx.beginPath();
+    ctx.arc(76, 6, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(75, 5, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1A0E08';
+    ctx.beginPath();
+    ctx.arc(75, 5, 1, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye bump
+    ctx.fillStyle = '#2D7D2D';
+    ctx.beginPath();
+    ctx.arc(76, 3, 3, Math.PI, 0);
+    ctx.fill();
+
+    // Back bumps
+    ctx.fillStyle = '#2D7D2D';
+    const bumps = [28, 36, 44, 52];
+    for (const bx of bumps) {
+      ctx.beginPath();
+      ctx.arc(bx, 9, 3, Math.PI, 0);
+      ctx.fill();
+    }
+
+    // Legs
+    ctx.fillStyle = '#1B5C1B';
+    const legPhase = Math.sin(frame * 0.3);
+    const crocLegs = [
+      [24 + legPhase * 1.5, 26],
+      [34 - legPhase * 1.5, 26],
+      [54 + legPhase * 1.5, 26],
+      [64 - legPhase * 1.5, 26],
+    ];
+    for (const [lx, ly] of crocLegs) {
+      drawRoundedRect(ctx, lx, ly, 8, 8, 3);
+      ctx.fill();
+    }
+
+    // Tail
+    ctx.fillStyle = '#2D7D2D';
+    ctx.beginPath();
+    ctx.moveTo(22, 14);
+    ctx.quadraticCurveTo(4, 4, 0, 18);
+    ctx.quadraticCurveTo(8, 12, 22, 18);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  // --- Small sprites (hearts, ruby, medal, cup) ---
   const R2 = '#E03030', R3 = '#FF4444', R4 = '#C02020';
   const heartData = [
     [0,R2,R2,0,R2,R2,0], [R3,R2,R3,R3,R2,R3,R2], [R3,R3,R3,R3,R3,R3,R2],
@@ -137,43 +298,84 @@ const Sprites = (() => {
     }
   }
 
-  function getVictorySVG() {
-    if (!capyCanvas) return '<div>Loading...</div>';
-    const dataUrl = capyCanvas.toDataURL();
-    return `<img src="${dataUrl}" style="width:240px;image-rendering:pixelated;border-radius:12px;box-shadow:0 0 20px rgba(255,215,0,0.5)" alt="Victory Capybara"/>`;
+  function getVictorySG() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 200;
+    canvas.height = 200;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+
+    // Victory capybara: same capybara but with sunglasses and victory sign
+    drawCapybara(ctx, 0, 0, 0.6, 0, false);
+
+    // Sunglasses
+    ctx.fillStyle = '#1A0E08';
+    drawRoundedRect(ctx, 30, 6, 16, 6, 2);
+    ctx.fill();
+    drawRoundedRect(ctx, 52, 6, 16, 6, 2);
+    ctx.fill();
+    ctx.fillStyle = '#333';
+    ctx.fillRect(46, 8, 6, 2);
+
+    // Sunglasses shine
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    drawRoundedRect(ctx, 32, 7, 6, 3, 1);
+    ctx.fill();
+    drawRoundedRect(ctx, 54, 7, 6, 3, 1);
+    ctx.fill();
+
+    // Victory sign (peace sign hand)
+    ctx.fillStyle = '#8B5E3C';
+    drawRoundedRect(ctx, 68, 16, 8, 12, 3);
+    ctx.fill();
+    ctx.fillStyle = '#6B4226';
+    ctx.fillRect(70, 16, 2, 12);
+    ctx.fillRect(74, 16, 2, 12);
+
+    // Cigarette
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(60, 24, 14, 3);
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(58, 24, 3, 3);
+    // Smoke
+    ctx.fillStyle = 'rgba(200,200,200,0.5)';
+    ctx.beginPath();
+    ctx.arc(56, 22, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(52, 18, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // "VICTORY" text
+    ctx.fillStyle = '#FFD700';
+    ctx.font = 'bold 14px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('VICTORY!', 100, 150);
+
+    return canvas.toDataURL();
   }
 
   function getCapybaraBounds(x, y, scale) {
-    const margin = 0.12;
-    return {
-      x: x + 500 * scale * margin,
-      y: y + 280 * scale * margin,
-      width: 500 * scale * (1 - margin * 2),
-      height: 280 * scale * (1 - margin * 2),
-    };
+    const s = scale || 1;
+    return { x: x + 10 * s, y: y + 6 * s, width: 72 * s, height: 40 * s };
   }
 
   function getCrocodileBounds(x, y, scale) {
-    const margin = 0.1;
-    return {
-      x: x + 500 * scale * margin,
-      y: y + 330 * scale * margin,
-      width: 500 * scale * (1 - margin * 2),
-      height: 330 * scale * (1 - margin * 2),
-    };
+    const s = scale || 1;
+    return { x: x + 6 * s, y: y + 4 * s, width: 100 * s, height: 32 * s };
   }
 
   function getCapybaraSize(scale) {
-    return { width: 500 * scale, height: 280 * scale };
+    const s = scale || 1;
+    return { width: 76 * s, height: 46 * s };
   }
 
   function getCrocodileSize(scale) {
-    return { width: 500 * scale, height: 330 * scale };
+    const s = scale || 1;
+    return { width: 106 * s, height: 34 * s };
   }
 
   return {
-    init,
-    onReady,
     drawCapybara,
     drawCrocodile,
     drawHeart,
@@ -182,7 +384,7 @@ const Sprites = (() => {
     drawCup,
     drawGround,
     drawGroundDetail,
-    getVictorySVG,
+    getVictorySG,
     getCapybaraBounds,
     getCrocodileBounds,
     getCapybaraSize,

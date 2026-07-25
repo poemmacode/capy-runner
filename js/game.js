@@ -5,17 +5,17 @@ const Game = (() => {
 
   const VIRT_W = 900;
   const VIRT_H = 350;
-  const GROUND_Y = 250;
-  const GRAVITY = 0.6;
-  const JUMP_FORCE = -11;
+  const GROUND_Y = 260;
+  const GRAVITY = 0.5;
+  const JUMP_FORCE = -10;
   const BASE_SPEED = 4.5;
   const CAPYBARA_X = 100;
-  const CAPYBARA_SCALE = 1.1;
-  const CROC_SCALE_MIN = 0.8;
-  const CROC_SCALE_MAX = 1.2;
+  const CAPYBARA_SCALE = 0.9;
+  const CROC_SCALE_MIN = 0.55;
+  const CROC_SCALE_MAX = 0.75;
   const CROC_SPAWN_MIN = 100;
   const CROC_SPAWN_MAX = 220;
-  const POINTS_PER_CROC = 10;
+  const POINTS_PER_CROC = 15;
   const INVINCIBLE_FRAMES = 90;
 
   canvas.width = VIRT_W;
@@ -89,7 +89,8 @@ const Game = (() => {
     }
 
     scrollX += speed; difficultyTimer++;
-    if (difficultyTimer % 400 === 0 && speed < 9) speed += 0.3;
+    if (difficultyTimer % 500 === 0 && speed < 12) {
+      speed += 0.2;
 
     spawnTimer++;
     if (spawnTimer >= nextCrocSpawn) {

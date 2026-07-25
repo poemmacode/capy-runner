@@ -357,12 +357,12 @@ const Sprites = (() => {
 
   function getCapybaraBounds(x, y, scale) {
     const s = scale || 1;
-    return { x: x + 10 * s, y: y + 6 * s, width: 72 * s, height: 40 * s };
+    return { x: x + 15 * s, y: y + 10 * s, width: 50 * s, height: 30 * s };
   }
 
   function getCrocodileBounds(x, y, scale) {
     const s = scale || 1;
-    return { x: x + 6 * s, y: y + 4 * s, width: 100 * s, height: 32 * s };
+    return { x: x + 10 * s, y: y + 2 * s, width: 90 * s, height: 18 * s };
   }
 
   function getCapybaraSize(scale) {

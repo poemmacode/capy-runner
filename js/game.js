@@ -25,7 +25,8 @@ const Game = (() => {
   let frame = 0;
   let animFrame = 0;
   let animTimer = 0;
-  let capybaraY = GROUND_Y;
+  const capybaraSize = Sprites.getCapybaraSize(1);
+  let capybaraY = GROUND_Y - capybaraSize.height;
   let capybaraVelY = 0;
   let isJumping = false;
   let crocodiles = [];
@@ -52,7 +53,7 @@ const Game = (() => {
     frame = 0;
     animFrame = 0;
     animTimer = 0;
-    capybaraY = GROUND_Y;
+    capybaraY = GROUND_Y - capybaraSize.height;
     capybaraVelY = 0;
     isJumping = false;
     crocodiles = [];
@@ -73,10 +74,11 @@ const Game = (() => {
   }
 
   function spawnCrocodile() {
-    const scale = 0.9 + Math.random() * 0.3;
+    const scale = 0.7 + Math.random() * 0.4;
+    const crocSize = Sprites.getCrocodileSize(scale);
     crocodiles.push({
       x: CANVAS_W + 20,
-      y: GROUND_Y - 13 * Sprites.PIXEL * scale + 14 * Sprites.PIXEL * scale - 13 * Sprites.PIXEL * scale,
+      y: GROUND_Y - crocSize.height,
       scale: scale,
       frame: 0,
       frameTimer: 0,
@@ -97,8 +99,8 @@ const Game = (() => {
     capybaraVelY += GRAVITY;
     capybaraY += capybaraVelY;
 
-    if (capybaraY >= GROUND_Y) {
-      capybaraY = GROUND_Y;
+    if (capybaraY >= GROUND_Y - capybaraSize.height) {
+      capybaraY = GROUND_Y - capybaraSize.height;
       capybaraVelY = 0;
       isJumping = false;
     }
@@ -128,7 +130,7 @@ const Game = (() => {
         croc.frame++;
       }
 
-      if (!croc.counted && croc.x + 20 * Sprites.PIXEL * croc.scale < CAPYBARA_X) {
+      if (!croc.counted && croc.x + Sprites.getCrocodileSize(croc.scale).width < CAPYBARA_X) {
         croc.counted = true;
         score += POINTS_PER_CROC;
         const events = Rewards.addScore(POINTS_PER_CROC);
@@ -235,9 +237,9 @@ const Game = (() => {
 
   function draw() {
     const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-    gradient.addColorStop(0, '#1a1a3e');
-    gradient.addColorStop(0.6, '#2a2a4e');
-    gradient.addColorStop(1, '#0f1f0f');
+    gradient.addColorStop(0, '#87CEEB');
+    gradient.addColorStop(0.6, '#B0E0E6');
+    gradient.addColorStop(1, '#90EE90');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
@@ -246,12 +248,12 @@ const Game = (() => {
     }
 
     ctx.fillStyle = '#3A5C1C';
-    ctx.fillRect(0, GROUND_Y + 14 * 4 - 4, CANVAS_W, CANVAS_H - GROUND_Y);
+    ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
 
-    Sprites.drawGroundDetail(ctx, scrollX, CANVAS_W, GROUND_Y + 14 * 4 - 4);
+    Sprites.drawGroundDetail(ctx, scrollX, CANVAS_W, GROUND_Y);
 
     ctx.fillStyle = '#2A4C0C';
-    ctx.fillRect(0, GROUND_Y + 14 * 4, CANVAS_W, 4);
+    ctx.fillRect(0, GROUND_Y + 2, CANVAS_W, 4);
 
     if (state === 'playing' || state === 'gameover' || state === 'victory') {
       if (invincibleTimer > 0 && Math.floor(invincibleTimer / 4) % 2 === 0) {
@@ -266,7 +268,8 @@ const Game = (() => {
     }
 
     if (state === 'start') {
-      Sprites.drawCapybara(ctx, CANVAS_W / 2 - 32, GROUND_Y - 20, 2, animFrame, false);
+      const startSize = Sprites.getCapybaraSize(1.5);
+      Sprites.drawCapybara(ctx, CANVAS_W / 2 - startSize.width / 2, GROUND_Y - startSize.height, 1.5, animFrame, false);
     }
   }
 

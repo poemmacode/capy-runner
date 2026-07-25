@@ -91,6 +91,7 @@ const Game = (() => {
     scrollX += speed; difficultyTimer++;
     if (difficultyTimer % 500 === 0 && speed < 12) {
       speed += 0.2;
+    }
 
     spawnTimer++;
     if (spawnTimer >= nextCrocSpawn) {

@@ -1,234 +1,179 @@
 const Sprites = (() => {
-  const PIXEL = 4;
-  const SVG_PIXEL = 2;
+  let capyCanvas = null;
+  let crocCanvas = null;
+  let loaded = false;
+  let loadCallbacks = [];
 
-  function drawPixelGrid(ctx, data, x, y, scale, pixelSize) {
-    const ps = pixelSize || PIXEL;
+  function onReady(cb) {
+    if (loaded) cb();
+    else loadCallbacks.push(cb);
+  }
+
+  function loadSVGText(path) {
+    return new Promise((resolve, reject) => {
+      const req = new XMLHttpRequest();
+      req.open('GET', path, true);
+      req.onload = () => resolve(req.responseText);
+      req.onerror = reject;
+      req.send();
+    });
+  }
+
+  function svgToDataUrl(svg) {
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  function svgToCanvas(svgText, w, h) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, 0, 0);
+        resolve(c);
+      };
+      img.src = svgToDataUrl(svgText);
+    });
+  }
+
+  async function init() {
+    try {
+      const capySVG = await loadSVGText('js/capy-clean.svg');
+      const crocSVG = await loadSVGText('js/coco-clean.svg');
+      capyCanvas = await svgToCanvas(capySVG, 500, 280);
+      crocCanvas = await svgToCanvas(crocSVG, 500, 330);
+      loaded = true;
+      loadCallbacks.forEach(cb => cb());
+      loadCallbacks = [];
+    } catch (e) {
+      console.error('Sprites.init error:', e);
+    }
+  }
+
+  function drawCapybara(ctx, x, y, scale, frame, jumping) {
+    if (!capyCanvas) return;
+    const bob = jumping ? 0 : Math.sin(frame * 0.3) * 2;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(capyCanvas, 0, 0, 500, 280, x, y + bob, 500 * scale, 280 * scale);
+  }
+
+  function drawCrocodile(ctx, x, y, scale, frame) {
+    if (!crocCanvas) return;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(crocCanvas, 0, 0, 500, 330, x, y, 500 * scale, 330 * scale);
+  }
+
+  // --- Small pixel sprites (hearts, ruby, medal, cup) ---
+
+  const PIXEL = 4;
+
+  function drawPixelGrid(ctx, data, x, y, scale) {
+    const ps = PIXEL;
     for (let r = 0; r < data.length; r++) {
       for (let c = 0; c < data[r].length; c++) {
         const color = data[r][c];
         if (color) {
           ctx.fillStyle = color;
-          ctx.fillRect(
-            x + c * ps * scale,
-            y + r * ps * scale,
-            ps * scale,
-            ps * scale
-          );
+          ctx.fillRect(x + c * ps * scale, y + r * ps * scale, ps * scale, ps * scale);
         }
       }
     }
   }
 
-  const capybaraSVG = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#dddddd','#dddddd',0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#aaaaaa','#cccccc','#cccccc',0,0,'#cccccc',0,'#996666','#775555','#554444','#cccccc',0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#bbbbbb','#775555','#996666','#996666','#cccccc','#aaaaaa','#eeaa88','#cc9977','#aa7755',0,'#554444','#aaaaaa',0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#996666','#996655','#885555','#cc8877','#cc9977','#dd9977','#eebb88','#eeaa88','#eeaa77','#eeaa88','#eeaa88','#cc9977','#775555',0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#aaaaaa','#996666','#775555','#775555','#eeaa88',0,0,0,0,'#eeaa77',0,'#eeaa88','#eebb88','#eebb88','#775555',0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#aaaaaa','#775555',0,'#996655','#eeaa77','#eeaa88',0,'#ddaa77','#cc8877','#cc8877','#eeaa88',0,0,'#eeaa77','#ddaa77','#eeaa88','#bbbbbb',0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,'#dddddd','#aaaaaa','#cccccc',0,0,0,'#aaaaaa','#996666','#554444','#dd9977','#eeaa77','#eeaa88',0,'#ddaa77',0,0,'#eeaa88',0,0,'#eeaa77','#eeaa88','#eebb88','#cc9977','#996666',0,0,0],
-    [0,0,0,0,0,0,0,0,'#bbbbbb','#996666','#dddddd','#dddddd','#eebb88',0,'#dddddd','#dddddd','#bbbbbb','#cc8877','#eeaa88','#dd9977','#eeaa88',0,0,'#eeaa77','#aa7755','#554444','#ddaa77','#eeaa77','#eeaa88',0,0,0,0,0,'#cc9977','#775555',0,0],
-    [0,0,0,0,0,0,0,'#554444','#dddddd','#eebb88','#eeaa77','#eebb88','#eeaa88',0,0,0,'#eebb88','#eeaa88',0,0,0,0,0,'#dd9977','#554444','#aaaaaa','#554444','#eeaa88','#eeaa88',0,0,0,'#eeaa77',0,'#eeaa88','#cc9977','#cccccc',0],
-    [0,0,0,0,0,0,'#cc9977','#eebb88',0,'#eebb88','#aa7755',0,'#eeaa88',0,0,0,0,0,0,0,0,0,0,'#eeaa77','#554444','#554444',0,'#775555','#eeaa88',0,0,'#eeaa77','#cc8877','#996666',0,0,'#aaaaaa',0],
-    [0,0,'#dddddd','#dddddd','#996666','#cc9977','#eeaa88','#eebb88',0,'#eeaa77',0,'#eeaa88',0,'#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,'#cc9977','#996655',0,'#eeaa88',0,0,0,'#ddaa77','#996655','#996655',0,0,'#554444','#cccccc'],
-    [0,0,'#cccccc','#eeaa88','#554444','#eeaa77','#aa7755','#eeaa88','#eeaa77','#eeaa88','#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#eeaa77','#aa7755','#996666','#554444','#775555','#554444','#554444',0],
-    [0,'#aaaaaa','#cc8877','#cc9977','#eebb88','#eeaa77','#996655','#eeaa77','#eeaa88','#eeaa77','#eeaa88',0,0,0,0,0,0,'#aa7755','#cc9977','#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,'#eeaa77','#996666',0,0,0,'#885555','#554444',0],
-    [0,'#bbbbbb','#cc8877','#554444','#eeaa88','#eeaa77','#885555','#eeaa88',0,0,0,'#eeaa77',0,'#eeaa88',0,0,0,0,'#aa7755','#eeaa88',0,0,0,0,0,0,0,0,0,0,0,'#996666',0,0,0,'#554444','#775555',0],
-    [0,'#aaaaaa','#aa7755','#cc9977','#eeaa88','#eeaa77','#cc8877','#eeaa88',0,0,0,0,0,0,0,0,0,'#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,0,0,0,'#996666',0,0,'#996655','#775555','#aaaaaa',0],
-    [0,'#cccccc','#cc8877','#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#aa7755','#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,'#996666',0,0,'#996655','#554444','#996666',0],
-    [0,0,'#554444','#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,'#eeaa77','#eeaa88',0,0,0,0,'#eeaa77','#dd9977','#eeaa88',0,0,0,0,0,'#eeaa77',0,0,'#996666',0,'#775555',0,'#cc8877',0,0],
-    [0,0,0,'#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,0,'#eeaa77','#eeaa88',0,0,0,'#eeaa77','#dd8877',0,0,0,'#dd9977',0,0,0,'#dd8877',0,'#996655','#775555','#775555','#996666',0,0,0],
-    [0,0,0,'#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#eeaa77','#dd8877',0,0,0,'#cc8877','#996655','#996655','#cc8877','#cccccc','#dddddd','#bbbbbb','#bbbbbb',0,0,0,0],
-    [0,0,'#bbbbbb','#eeaa88',0,0,0,0,0,'#eeaa77','#eeaa88',0,0,0,0,0,0,0,0,0,0,0,'#dd8877',0,0,0,0,'#cc8877','#996666','#cccccc',0,0,0,0,0,0,0,0],
-    [0,0,0,'#cc8877','#eeaa88',0,0,0,0,'#cc9977','#ddaa77','#eeaa88',0,0,0,0,0,0,0,0,0,0,'#dd8877','#996655','#cc8877',0,'#dd8877','#aa7755','#554444','#bbbbbb',0,0,0,0,0,0,0,0],
-    [0,0,0,'#775555','#eeaa88',0,0,0,0,'#996655','#cc9977','#eeaa88',0,0,0,0,0,0,0,0,0,0,'#aa7755','#cc8877','#996666','#aa7755','#996655','#996666','#cccccc',0,0,0,0,0,0,0,0,0],
-    [0,0,0,'#554444','#dd8877','#dd9977','#eeaa77','#eeaa88','#eeaa77','#885555','#aa7755','#dd9977',0,0,0,0,'#eeaa77','#eeaa88',0,0,'#eeaa77','#eeaa88','#dd9977','#dd8877',0,'#885555','#885555','#aaaaaa',0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,'#dd8877','#dd8877',0,0,0,'#cc8877','#dd8877',0,0,0,0,'#cc8877','#cc8877','#eeaa77','#eeaa88',0,'#eeaa77','#aa7755','#cc8877',0,'#775555','#996655','#cc8877',0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,'#996655','#dd8877','#cc8877',0,'#996655','#554444','#996666','#cc8877',0,0,0,0,'#996655',0,'#dd9977','#996655',0,'#554444','#554444','#554444','#996666','#885555',0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,'#775555','#aa7755','#996655','#885555','#554444','#996666','#996666','#885555','#554444','#554444','#775555',0,'#996666','#996666','#996655','#996655',0,'#554444','#bbbbbb',0,'#554444','#775555','#885555','#996666','#dddddd',0,0,0,0,0,0,0,0,0],
-    ['#dddddd',0,'#cccccc',0,0,'#775555','#554444','#554444','#775555',0,'#aaaaaa','#aaaaaa','#aaaaaa',0,'#bbbbbb','#cccccc',0,0,'#554444','#885555','#996666','#996666','#996666','#cccccc','#996666','#554444','#996666','#aaaaaa','#cccccc',0,0,0,0,'#dddddd',0,0,0,0],
-    [0,'#dddddd','#cccccc',0,0,'#cccccc','#bbbbbb',0,0,0,0,0,0,0,0,0,0,0,'#aaaaaa','#996666','#554444','#554444','#aaaaaa','#bbbbbb',0,'#aaaaaa',0,'#bbbbbb',0,0,0,0,0,'#cccccc',0,'#dddddd',0,0],
-  ];
-
-  const crocSVG = [
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#ddeeee','#339977','#77bb99','#ddeeee'],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#99ccbb','#229977',0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#ddeeee','#44aa88','#229977',0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#44aa88','#44aa88','#44aa88','#229977',0,0,'#77bb99','#99ccbb'],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#77bb99','#119977','#229977','#77bbaa',0,0,'#ddeeee','#229977',0,0,0,0,'#119977','#229977','#99ccbb','#ffeedd','#ffeedd'],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#99ccbb','#229977','#117766','#118866','#229977','#119977',0,'#229977','#119977','#229977',0,0,'#44aa88','#77bb99',0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#99ccbb','#77bbaa','#44aa88','#229977',0,'#117766','#229977',0,0,'#119977',0,'#229977',0,'#77bb99','#ddeeee','#ffeedd',0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,'#99ccbb',0,0,'#99ccbb','#ddeeee',0,'#339977','#99ccbb',0,0,'#99ccbb','#44aa88','#229977','#119966','#229966','#229977',0,0,0,0,0,0,0,'#229966','#ddeeee','#ffeedd',0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,'#339977',0,'#339977','#116655','#116655','#116655','#116655','#77bbaa','#116655','#116655',0,'#229977','#119966',0,0,'#229966','#229977',0,0,0,0,0,0,0,'#77bb99','#ffeedd',0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,'#ddeeee','#99ccbb',0,'#116655',0,0,0,0,'#117755',0,0,0,'#118866',0,'#119966',0,0,'#229966','#119966','#229977','#229966','#229977','#119977','#229966','#339977','#44aa88',0,0,'#ffeedd',0,0,0,0,0,0,0,0],
-    [0,0,0,0,'#77bbaa','#ddeeee','#339977','#116655','#117755',0,'#117766','#118866',0,0,0,0,0,0,0,'#119966',0,0,0,'#229966','#119966','#229966','#229966','#339977','#339977','#88aa44','#88aa44','#88aa44',0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,'#77bbaa','#116655','#339977','#117766','#118866',0,0,0,0,0,0,0,0,0,0,0,0,'#119966',0,0,'#229966',0,'#88aa44','#88aa44',0,0,'#88aa44','#88aa44','#88aa44','#88aa44','#ffeedd',0,0,0,0,0,0,0,0,0],
-    [0,0,'#99ccbb','#339977','#117766','#118866',0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#119966',0,0,'#229966','#229966','#88aa44',0,0,0,0,0,'#88aa44','#88aa44','#88aa44','#ffeedd','#ffeedd',0,0,0,0,0,0,0],
-    [0,'#ddeeee','#116655','#118855',0,'#118866',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#119966',0,0,'#229966','#88aa44',0,0,0,0,0,0,'#88aa44','#88aa44','#88aa44','#88aa44','#ffeedd',0,0,0,0,0,0],
-    [0,'#77bb99','#118855',0,'#118866',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#119966',0,0,'#229966','#88aa44','#88aa44',0,0,0,0,0,0,0,'#88aa44','#88aa44',0,'#88aa44','#99ccbb','#ffeedd','#ffeedd',0,'#ffeedd'],
-    ['#99ccbb','#118855',0,0,0,'#118866',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#119966',0,0,'#229966','#339977','#88aa44',0,0,0,0,0,0,0,0,0,'#88aa44','#88aa44','#88aa44',0,0,'#88aa44'],
-    ['#339977','#118855',0,0,0,'#118866',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#119966',0,0,'#229966',0,'#229966','#88aa44','#88aa44',0,'#88aa44',0,0,0,0,0,0,0,0,0,'#88aa44'],
-    ['#44aa88','#118855',0,0,0,'#118866',0,0,0,0,0,0,0,0,0,'#117766','#118866',0,0,0,0,0,0,'#119966',0,'#229966','#119966','#229966','#229977','#77bb99','#ddeeee',0,0,0,0,'#ddeeee','#99ccbb','#99ccbb','#99ccbb',0,'#99ccbb','#ddeeee',0],
-    [0,'#339977','#118855',0,0,0,'#118866',0,0,0,0,0,0,0,0,0,'#117766',0,0,'#118866',0,0,0,0,'#119966',0,'#228866','#77bbaa','#99ccbb',0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,'#ddeeee','#77bbaa','#228866','#118866',0,'#228866','#118866',0,0,'#228866',0,0,'#118866','#117766',0,0,0,0,0,'#117755',0,'#118866','#228866','#339977','#99ccbb','#99ccbb',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#77bbaa','#117766',0,0,0,0,0,'#339977','#99ccbb',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#ddeeee','#44aa88','#117766','#117755','#117766',0,0,0,0,'#99ccbb',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#77bbaa',0,0,'#77bb99','#117766','#117766','#229977','#77bb99','#ddeeee',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,'#99ccbb','#44aa88','#99ccbb','#ddeeee',0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  ];
-
-  const R2 = '#E03030';
-  const R3 = '#FF4444';
-  const R4 = '#C02020';
-
+  const R2 = '#E03030', R3 = '#FF4444', R4 = '#C02020';
   const heartData = [
-    [0,R2,R2,0,R2,R2,0],
-    [R3,R2,R3,R3,R2,R3,R2],
-    [R3,R3,R3,R3,R3,R3,R2],
-    [R3,R3,R3,R3,R3,R3,R2],
-    [0,R3,R3,R3,R3,R3,0],
-    [0,0,R4,R4,R4,0,0],
-    [0,0,0,R4,0,0,0],
+    [0,R2,R2,0,R2,R2,0], [R3,R2,R3,R3,R2,R3,R2], [R3,R3,R3,R3,R3,R3,R2],
+    [R3,R3,R3,R3,R3,R3,R2], [0,R3,R3,R3,R3,R3,0], [0,0,R4,R4,R4,0,0], [0,0,0,R4,0,0,0],
   ];
-
   const heartEmpty = [
-    [0,'#555','#555',0,'#555','#555',0],
-    ['#555','#444','#555','#555','#444','#555','#444'],
-    ['#555','#555','#555','#555','#555','#555','#444'],
-    ['#555','#555','#555','#555','#555','#555','#444'],
-    [0,'#555','#555','#555','#555','#555',0],
-    [0,0,'#444','#444','#444',0,0],
-    [0,0,0,'#444',0,0,0],
+    [0,'#555','#555',0,'#555','#555',0], ['#555','#444','#555','#555','#444','#555','#444'],
+    ['#555','#555','#555','#555','#555','#555','#444'], ['#555','#555','#555','#555','#555','#555','#444'],
+    [0,'#555','#555','#555','#555','#555',0], [0,0,'#444','#444','#444',0,0], [0,0,0,'#444',0,0,0],
   ];
-
-  const DG = '#D4AF37';
-  const dg = '#B8960F';
-  const RB = '#E8E8E8';
-  const RD = '#CC0000';
-  const rD = '#AA0000';
-
+  const DG = '#D4AF37', dg = '#B8960F', RB = '#E8E8E8', RD = '#CC0000', rD = '#AA0000';
   const rubyData = [
-    [0,0,0,RD,RD,0,0,0],
-    [0,0,RD,RB,RD,RD,0,0],
-    [0,RD,RB,RB,RD,RD,RD,0],
-    [RD,RB,RD,RD,RD,RD,RD,RD],
-    [RD,RD,RD,RD,RD,RD,RD,rD],
-    [0,RD,RD,RD,RD,RD,rD,0],
-    [0,0,RD,RD,RD,rD,0,0],
-    [0,0,0,rD,rD,0,0,0],
+    [0,0,0,RD,RD,0,0,0], [0,0,RD,RB,RD,RD,0,0], [0,RD,RB,RB,RD,RD,RD,0],
+    [RD,RB,RD,RD,RD,RD,RD,RD], [RD,RD,RD,RD,RD,RD,RD,rD], [0,RD,RD,RD,RD,RD,rD,0],
+    [0,0,RD,RD,RD,rD,0,0], [0,0,0,rD,rD,0,0,0],
   ];
-
   const medalData = [
-    [0,0,DG,DG,DG,DG,0,0],
-    [0,DG,dg,dg,dg,dg,DG,0],
-    [DG,dg,RB,RB,RB,dg,dg,DG],
-    [DG,dg,RB,DG,DG,dg,dg,DG],
-    [DG,dg,RB,DG,dg,dg,dg,DG],
-    [DG,dg,RB,RB,dg,dg,dg,DG],
-    [0,DG,dg,dg,dg,dg,DG,0],
-    [0,0,DG,DG,DG,DG,0,0],
+    [0,0,DG,DG,DG,DG,0,0], [0,DG,dg,dg,dg,dg,DG,0], [DG,dg,RB,RB,RB,dg,dg,DG],
+    [DG,dg,RB,DG,DG,dg,dg,DG], [DG,dg,RB,DG,dg,dg,dg,DG], [DG,dg,RB,RB,dg,dg,dg,DG],
+    [0,DG,dg,dg,dg,dg,DG,0], [0,0,DG,DG,DG,DG,0,0],
   ];
-
   const cupData = [
-    [0,DG,DG,0,0,DG,DG,0],
-    [0,DG,dg,DG,DG,dg,DG,0],
-    [0,0,DG,dg,dg,DG,0,0],
-    [0,0,DG,dg,dg,DG,0,0],
-    [0,0,DG,dg,dg,DG,0,0],
-    [0,0,0,DG,DG,0,0,0],
-    [0,0,DG,DG,DG,DG,0,0],
-    [0,DG,DG,DG,DG,DG,DG,0],
+    [0,DG,DG,0,0,DG,DG,0], [0,DG,dg,DG,DG,dg,DG,0], [0,0,DG,dg,dg,DG,0,0],
+    [0,0,DG,dg,dg,DG,0,0], [0,0,DG,dg,dg,DG,0,0], [0,0,0,DG,DG,0,0,0],
+    [0,0,DG,DG,DG,DG,0,0], [0,DG,DG,DG,DG,DG,DG,0],
   ];
-
-  function drawCapybara(ctx, x, y, scale, frame, jumping) {
-    drawPixelGrid(ctx, capybaraSVG, x, y, scale, SVG_PIXEL);
-  }
-
-  function drawCrocodile(ctx, x, y, scale, frame) {
-    drawPixelGrid(ctx, crocSVG, x, y, scale, SVG_PIXEL);
-  }
 
   function drawHeart(ctx, x, y, scale, filled) {
     drawPixelGrid(ctx, filled ? heartData : heartEmpty, x, y, scale);
   }
-
-  function drawRuby(ctx, x, y, scale) {
-    drawPixelGrid(ctx, rubyData, x, y, scale);
-  }
-
-  function drawMedal(ctx, x, y, scale) {
-    drawPixelGrid(ctx, medalData, x, y, scale);
-  }
-
-  function drawCup(ctx, x, y, scale) {
-    drawPixelGrid(ctx, cupData, x, y, scale);
-  }
+  function drawRuby(ctx, x, y, scale) { drawPixelGrid(ctx, rubyData, x, y, scale); }
+  function drawMedal(ctx, x, y, scale) { drawPixelGrid(ctx, medalData, x, y, scale); }
+  function drawCup(ctx, x, y, scale) { drawPixelGrid(ctx, cupData, x, y, scale); }
 
   function drawGround(ctx, x, y, width, height) {
     ctx.fillStyle = '#5A8C3C';
-    ctx.fillRect(x, y, width, 3);
+    ctx.fillRect(x, y, width, 4);
     ctx.fillStyle = '#3A6C1C';
-    ctx.fillRect(x, y + 3, width, height - 3);
+    ctx.fillRect(x, y + 4, width, height - 4);
   }
 
   function drawGroundDetail(ctx, scrollX, canvasWidth, groundY) {
     ctx.fillStyle = '#6BA34A';
-    for (let i = 0; i < canvasWidth + 40; i += 20) {
-      const offset = (scrollX * 0.5) % 20;
-      ctx.fillRect(i - offset, groundY - 2, 8, 2);
+    for (let i = 0; i < canvasWidth + 40; i += 25) {
+      const offset = (scrollX * 0.5) % 25;
+      ctx.fillRect(i - offset, groundY - 2, 10, 2);
     }
     ctx.fillStyle = '#4A8C2C';
-    for (let i = 0; i < canvasWidth + 40; i += 35) {
-      const offset = (scrollX * 0.3) % 35;
-      ctx.fillRect(i - offset + 10, groundY - 4, 4, 2);
+    for (let i = 0; i < canvasWidth + 40; i += 40) {
+      const offset = (scrollX * 0.3) % 40;
+      ctx.fillRect(i - offset + 12, groundY - 4, 5, 2);
     }
   }
 
   function getVictorySVG() {
-    const ps = 6;
-    const victoryCapybara = capybaraSVG;
-    const w = victoryCapybara[0].length * ps;
-    const h = victoryCapybara.length * ps;
-    const rects = [];
-    for (let r = 0; r < victoryCapybara.length; r++) {
-      for (let c = 0; c < victoryCapybara[r].length; c++) {
-        const color = victoryCapybara[r][c];
-        if (color) {
-          rects.push(`<rect x="${c * ps}" y="${r * ps}" width="${ps}" height="${ps}" fill="${color}"/>`);
-        }
-      }
-    }
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${rects.join('')}</svg>`;
+    if (!capyCanvas) return '<div>Loading...</div>';
+    const dataUrl = capyCanvas.toDataURL();
+    return `<img src="${dataUrl}" style="width:240px;image-rendering:pixelated;border-radius:12px;box-shadow:0 0 20px rgba(255,215,0,0.5)" alt="Victory Capybara"/>`;
   }
 
   function getCapybaraBounds(x, y, scale) {
-    const w = capybaraSVG[0].length * SVG_PIXEL * scale;
-    const h = capybaraSVG.length * SVG_PIXEL * scale;
-    return { x: x + 4 * scale, y: y + 2 * scale, width: w - 8 * scale, height: h - 4 * scale };
+    const margin = 0.12;
+    return {
+      x: x + 500 * scale * margin,
+      y: y + 280 * scale * margin,
+      width: 500 * scale * (1 - margin * 2),
+      height: 280 * scale * (1 - margin * 2),
+    };
   }
 
   function getCrocodileBounds(x, y, scale) {
-    const w = crocSVG[0].length * SVG_PIXEL * scale;
-    const h = crocSVG.length * SVG_PIXEL * scale;
-    return { x: x + 2 * scale, y: y + 2 * scale, width: w - 6 * scale, height: h - 4 * scale };
+    const margin = 0.1;
+    return {
+      x: x + 500 * scale * margin,
+      y: y + 330 * scale * margin,
+      width: 500 * scale * (1 - margin * 2),
+      height: 330 * scale * (1 - margin * 2),
+    };
   }
 
   function getCapybaraSize(scale) {
-    return {
-      width: capybaraSVG[0].length * SVG_PIXEL * scale,
-      height: capybaraSVG.length * SVG_PIXEL * scale,
-    };
+    return { width: 500 * scale, height: 280 * scale };
   }
 
   function getCrocodileSize(scale) {
-    return {
-      width: crocSVG[0].length * SVG_PIXEL * scale,
-      height: crocSVG.length * SVG_PIXEL * scale,
-    };
+    return { width: 500 * scale, height: 330 * scale };
   }
 
   return {
+    init,
+    onReady,
     drawCapybara,
     drawCrocodile,
     drawHeart,
@@ -243,8 +188,5 @@ const Sprites = (() => {
     getCapybaraSize,
     getCrocodileSize,
     PIXEL,
-    SVG_PIXEL,
-    capybaraSVG,
-    crocSVG,
   };
 })();

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Capybara Runner</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    @keyframes popupAnim {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+      50% { transform: translate(-50%, -80%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -120%) scale(1); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-wrapper">
+    <div id="game-container">
+      <canvas id="game-canvas"></canvas>
+
+      <div id="hud">
+        <div id="lives"></div>
+        <div id="score-display">SCORE: 0</div>
+      </div>
+      <div id="rewards-bar"></div>
+
+      <div id="start-screen" class="screen-overlay">
+        <h1>CAPYBARA<br>RUNNER</h1>
+        <div class="subtitle">A Pixel Adventure</div>
+        <div class="instructions">
+          SPACE / UP / TAP to Jump<br>
+          Avoid the Crocodiles!<br>
+          <br>
+          150 pts = Ruby<br>
+          3 Rubies = Medal<br>
+          3 Medals = Cup<br>
+          Collect all 3 Cups to Win!
+        </div>
+        <br>
+        <div class="blink" style="font-size:11px; color:#FFD700;">PRESS SPACE TO START</div>
+      </div>
+
+      <div id="gameover-screen" class="screen-overlay hidden">
+        <h2>GAME OVER</h2>
+        <div class="final-score">SCORE: 0</div>
+        <div class="final-rewards">NO REWARDS</div>
+        <div class="restart-hint blink">PRESS SPACE TO RETRY</div>
+      </div>
+
+      <div id="victory-screen" class="screen-overlay hidden">
+        <h2>VICTORY!</h2>
+        <div class="final-score">FINAL SCORE: 0</div>
+        <div class="victory-svg"></div>
+        <div class="victory-text">
+          You conquered all obstacles!<br>
+          The Capybara Legend!
+        </div>
+        <div class="restart-hint blink">PRESS SPACE TO PLAY AGAIN</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/sprites.js"></script>
+  <script src="js/sounds.js"></script>
+  <script src="js/rewards.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

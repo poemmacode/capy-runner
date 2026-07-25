@@ -144,6 +144,14 @@ canvas {
 }
 
 .screen-overlay {
+  pointer-events: none;
+  cursor: default;
+}
+.screen-overlay .blink {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.screen-overlay.hidden {
   position: absolute;
   top: 0;
   left: 0;

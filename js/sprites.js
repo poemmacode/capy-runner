@@ -44,61 +44,61 @@ const Sprites = (() => {
 
     // Body
     ctx.fillStyle = '#8B5E3C';
-    drawRoundedRect(ctx, 10, 8, 56, 32, 8);
+    drawRoundedRect(ctx, 10, 8, 42, 30, 8);
     ctx.fill();
     strokeStyle(ctx, '#6B4226');
-    drawRoundedRect(ctx, 10, 8, 56, 32, 8);
+    drawRoundedRect(ctx, 10, 8, 42, 30, 8);
     ctx.stroke();
 
     // Belly
     ctx.fillStyle = '#C4956A';
-    drawRoundedRect(ctx, 16, 20, 44, 18, 6);
+    drawRoundedRect(ctx, 16, 20, 30, 16, 5);
     ctx.fill();
 
     // Head
     ctx.fillStyle = '#8B5E3C';
-    drawRoundedRect(ctx, 52, 4, 22, 14, 6);
+    drawRoundedRect(ctx, 48, 4, 20, 12, 5);
     ctx.fill();
     strokeStyle(ctx, '#6B4226');
-    drawRoundedRect(ctx, 52, 4, 22, 14, 6);
+    drawRoundedRect(ctx, 48, 4, 20, 12, 5);
     ctx.stroke();
 
     // Snout
     ctx.fillStyle = '#A0785C';
-    drawRoundedRect(ctx, 64, 6, 16, 10, 4);
+    drawRoundedRect(ctx, 60, 6, 14, 8, 3);
     ctx.fill();
 
     // Nose
     ctx.fillStyle = '#2A1508';
-    drawRoundedRect(ctx, 72, 6, 6, 4, 2);
+    drawRoundedRect(ctx, 68, 6, 6, 4, 2);
     ctx.fill();
 
     // Eye
     ctx.fillStyle = '#1A0E08';
     ctx.beginPath();
-    ctx.arc(64, 8, 2.5, 0, Math.PI * 2);
+    ctx.arc(58, 7, 2, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#FFFFFF';
     ctx.beginPath();
-    ctx.arc(65, 7, 1, 0, Math.PI * 2);
+    ctx.arc(59, 6, 0.8, 0, Math.PI * 2);
     ctx.fill();
 
     // Ears
     ctx.fillStyle = '#8B5E3C';
     ctx.beginPath();
-    ctx.arc(56, 3, 4, Math.PI, 0);
+    ctx.arc(50, 2, 3, Math.PI, 0);
     ctx.fill();
     ctx.fillStyle = '#D4956A';
     ctx.beginPath();
-    ctx.arc(56, 3, 2, Math.PI, 0);
+    ctx.arc(50, 2, 1.5, Math.PI, 0);
     ctx.fill();
     ctx.fillStyle = '#8B5E3C';
     ctx.beginPath();
-    ctx.arc(68, 3, 4, Math.PI, 0);
+    ctx.arc(62, 2, 3, Math.PI, 0);
     ctx.fill();
     ctx.fillStyle = '#D4956A';
     ctx.beginPath();
-    ctx.arc(68, 3, 2, Math.PI, 0);
+    ctx.arc(62, 2, 1.5, Math.PI, 0);
     ctx.fill();
 
     // Legs
@@ -107,29 +107,29 @@ const Sprites = (() => {
 
     ctx.fillStyle = '#6B4226';
     const legPositions = [
-      [14 + legOffset, 38],
-      [22 - legOffset, 38],
-      [42 + legOffset, 38],
-      [50 - legOffset, 38],
+      [14 + legOffset, 36],
+      [20 - legOffset, 36],
+      [30 + legOffset, 36],
+      [36 - legOffset, 36],
     ];
     for (const [lx, ly] of legPositions) {
-      drawRoundedRect(ctx, lx, ly, 8, 8, 3);
+      drawRoundedRect(ctx, lx, ly, 7, 7, 3);
       ctx.fill();
     }
 
     // Feet
     ctx.fillStyle = '#5A3620';
     for (const [lx, ly] of legPositions) {
-      drawRoundedRect(ctx, lx - 2, ly + 6, 12, 4, 2);
+      drawRoundedRect(ctx, lx - 1, ly + 5, 9, 3, 1);
       ctx.fill();
     }
 
     // Tail
     ctx.fillStyle = '#6B4226';
     ctx.beginPath();
-    ctx.moveTo(10, 14);
-    ctx.quadraticCurveTo(2, 8, 6, 20);
-    ctx.quadraticCurveTo(4, 12, 10, 14);
+    ctx.moveTo(10, 12);
+    ctx.quadraticCurveTo(2, 6, 5, 16);
+    ctx.quadraticCurveTo(3, 10, 10, 12);
     ctx.fill();
 
     ctx.restore();
